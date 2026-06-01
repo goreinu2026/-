@@ -77,6 +77,8 @@ select{background:var(--bg);color:var(--text);border:1px solid var(--border2);bo
   <button class="nb" onclick="nav('ev',this)">📋 費用イベント</button>
   <button class="nb" onclick="nav('dt',this)">📑 詳細</button>
   <button class="nb share-btn" onclick="openShare()" style="margin-left:auto;color:var(--blue);font-weight:600">📤 データ共有</button>
+<button class="nb" onclick="if(confirm('設定をリセットしますか？')){clearStorage()}" style="color:var(--color-text-secondary)">🔄 リセット</button>
+<div id="toast" style="position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(10px);background:#24292f;color:white;padding:9px 18px;border-radius:20px;font-size:13px;font-weight:500;opacity:0;transition:opacity .3s,transform .3s;z-index:200;pointer-events:none;white-space:nowrap"></div>
 </div>
 <div id="share-overlay" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:100;align-items:center;justify-content:center">
   <div style="background:var(--bg);border-radius:var(--rl);padding:24px;width:92%;max-width:520px;max-height:90vh;overflow-y:auto">
@@ -102,7 +104,8 @@ select{background:var(--bg);color:var(--text);border:1px solid var(--border2);bo
         <button onclick="downloadJSON()" style="flex:1;padding:10px;background:var(--bg2);color:var(--text);border:1px solid var(--border2);border-radius:var(--r);cursor:pointer;font-size:13px">💾 ダウンロード</button>
       </div>
       <div style="margin-top:12px;border-top:1px solid var(--border);padding-top:12px">
-        <p style="font-size:12px;color:var(--text2);margin-bottom:6px">JSONを読み込んで設定を復元</p>
+        <p style="font-size:12px;color:var(--text2);margin-bottom:6px">💾 自動保存：入力内容はブラウザに自動保存されます。閉じても復元されます。</p>
+        <p style="font-size:12px;color:var(--text2);margin-top:8px;margin-bottom:6px">JSONを読み込んで設定を復元</p>
         <textarea id="import-json-text" placeholder="JSONをここに貼り付けてEnter" style="width:100%;height:80px;font-size:11px;border:1px solid var(--border2);border-radius:var(--r);padding:8px;background:var(--bg2);color:var(--text);resize:none;font-family:monospace"></textarea>
         <button onclick="importJSON()" style="margin-top:6px;width:100%;padding:10px;background:var(--green);color:white;border:none;border-radius:var(--r);cursor:pointer;font-size:13px;font-weight:600">設定を読み込む</button>
       </div>
@@ -172,19 +175,19 @@ select{background:var(--bg);color:var(--text);border:1px solid var(--border2);bo
   <div class="g2">
     <div class="card">
       <div class="st">🍳 食費・日用品</div>
-      <div class="ir"><span class="il">食費</span><input type="range" id="l-food" min="2" max="15" step="0.5" value="5"><span class="iv" id="v-l-food">5.0 万円</span></div>
+      <div class="ir"><span class="il">食費</span><input type="range" id="l-food" min="0" max="15" step="0.5" value="5"><span class="iv" id="v-l-food">5.0 万円</span></div>
       <div class="ir"><span class="il">外食・飲み代</span><input type="range" id="l-eat-out" min="0" max="10" step="0.5" value="3"><span class="iv" id="v-l-eat-out">3.0 万円</span></div>
-      <div class="ir"><span class="il">日用品・消耗品</span><input type="range" id="l-daily" min="0.5" max="5" step="0.5" value="1.5"><span class="iv" id="v-l-daily">1.5 万円</span></div>
+      <div class="ir"><span class="il">日用品・消耗品</span><input type="range" id="l-daily" min="0" max="5" step="0.5" value="1.5"><span class="iv" id="v-l-daily">1.5 万円</span></div>
     </div>
     <div class="card">
       <div class="st">🏠 住居費</div>
       <div class="ir"><span class="il">家賃 / ローン</span><input type="range" id="l-rent" min="0" max="30" step="0.5" value="12"><span class="iv" id="v-l-rent">12.0 万円</span></div>
       <div class="ir"><span class="il">管理費・駐車場</span><input type="range" id="l-mgmt" min="0" max="5" step="0.5" value="1.5"><span class="iv" id="v-l-mgmt">1.5 万円</span></div>
-      <div class="ir"><span class="il">水道・光熱費</span><input type="range" id="l-util" min="0.5" max="5" step="0.5" value="1.5"><span class="iv" id="v-l-util">1.5 万円</span></div>
+      <div class="ir"><span class="il">水道・光熱費</span><input type="range" id="l-util" min="0" max="5" step="0.5" value="1.5"><span class="iv" id="v-l-util">1.5 万円</span></div>
     </div>
     <div class="card">
       <div class="st">📱 通信・サブスク</div>
-      <div class="ir"><span class="il">スマホ・通信費</span><input type="range" id="l-tel" min="0.5" max="5" step="0.5" value="1.5"><span class="iv" id="v-l-tel">1.5 万円</span></div>
+      <div class="ir"><span class="il">スマホ・通信費</span><input type="range" id="l-tel" min="0" max="5" step="0.5" value="1.5"><span class="iv" id="v-l-tel">1.5 万円</span></div>
       <div class="ir"><span class="il">サブスク・動画等</span><input type="range" id="l-sub" min="0" max="3" step="0.5" value="0.5"><span class="iv" id="v-l-sub">0.5 万円</span></div>
       <div class="ir"><span class="il">インターネット</span><input type="range" id="l-net" min="0" max="2" step="0.1" value="0.5"><span class="iv" id="v-l-net">0.5 万円</span></div>
     </div>
@@ -760,7 +763,50 @@ function importJSON() {
   }
 }
 
-// Load state from URL params on startup
+// ── Auto Save / Restore ─────────────────────────────────────────
+var STORAGE_KEY = 'asset-sim-v1';
+
+function saveToStorage() {
+  try {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(collectState()));
+  } catch(e) {}
+}
+
+function loadFromStorage() {
+  try {
+    var raw = localStorage.getItem(STORAGE_KEY);
+    return raw ? JSON.parse(raw) : null;
+  } catch(e) { return null; }
+}
+
+function clearStorage() {
+  try { localStorage.removeItem(STORAGE_KEY); } catch(e) {}
+  applyState({});
+  sim();
+  closeShare();
+  showToast('設定をリセットしました');
+}
+
+function showToast(msg) {
+  var t = document.getElementById('toast');
+  if (!t) return;
+  t.textContent = msg;
+  t.style.opacity = '1';
+  t.style.transform = 'translateY(0)';
+  setTimeout(function() {
+    t.style.opacity = '0';
+    t.style.transform = 'translateY(10px)';
+  }, 2200);
+}
+
+// Hook sim() to auto-save on every change
+var _origSim = sim;
+sim = function() {
+  _origSim();
+  saveToStorage();
+};
+
+// Load state from URL params (priority) or localStorage on startup
 (function() {
   var params = new URLSearchParams(location.search);
   if (params.toString()) {
@@ -771,6 +817,13 @@ function importJSON() {
       else state[k] = v;
     });
     applyState(state);
+    showToast('URLから設定を読み込みました');
+  } else {
+    var saved = loadFromStorage();
+    if (saved) {
+      applyState(saved);
+      showToast('前回の設定を復元しました');
+    }
   }
 })();
 </script>
