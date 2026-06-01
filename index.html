@@ -1,0 +1,778 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>資産形成シミュレーター</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+<style>
+:root{--bg:#fff;--bg2:#f5f5f4;--bg3:#eeece8;--text:#1a1a1a;--text2:#6b7280;--border:rgba(0,0,0,0.1);--border2:rgba(0,0,0,0.2);--blue:#378ADD;--green:#3B6D11;--red:#A32D2D;--amber:#854F0B;--r:8px;--rl:12px}
+@media(prefers-color-scheme:dark){:root{--bg:#1c1c1e;--bg2:#2c2c2e;--bg3:#3a3a3c;--text:#f2f2f7;--text2:#aeaeb2;--border:rgba(255,255,255,0.1);--border2:rgba(255,255,255,0.2)}}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:-apple-system,BlinkMacSystemFont,'Hiragino Sans','Yu Gothic UI',sans-serif;background:var(--bg3);color:var(--text);min-height:100vh}
+.wrap{max-width:900px;margin:0 auto;padding:24px 16px}
+h1{font-size:20px;font-weight:600;margin-bottom:4px}
+.sub{font-size:13px;color:var(--text2);margin-bottom:20px}
+.nav{display:flex;border-bottom:1px solid var(--border);margin-bottom:20px;overflow-x:auto}
+.nb{padding:9px 14px;font-size:13px;border:none;background:transparent;color:var(--text2);cursor:pointer;border-bottom:2px solid transparent;margin-bottom:-1px;white-space:nowrap}
+.nb.on{color:var(--text);font-weight:600;border-bottom:2px solid var(--blue)}
+.pg{display:none}.pg.on{display:block}
+.g4{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;margin-bottom:16px}
+.g2{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px;margin-bottom:14px}
+@media(max-width:600px){.g4{grid-template-columns:repeat(2,1fr)}.g2{grid-template-columns:1fr}}
+.mc{background:var(--bg2);border-radius:var(--r);padding:12px 14px}
+.ml{font-size:11px;color:var(--text2);margin-bottom:4px}
+.mv{font-size:19px;font-weight:600;color:var(--text)}
+.ms{font-size:11px;color:var(--text2);margin-top:2px}
+.mv.ok{color:var(--green)}.mv.warn{color:var(--amber)}.mv.ng{color:var(--red)}
+.card{background:var(--bg);border:1px solid var(--border);border-radius:var(--rl);padding:16px 18px;margin-bottom:14px}
+.st{font-size:11px;font-weight:600;color:var(--text2);text-transform:uppercase;letter-spacing:.06em;margin-bottom:14px}
+.ir{display:flex;align-items:center;gap:8px;margin-bottom:10px}
+.ir:last-child{margin-bottom:0}
+.il{font-size:12px;color:var(--text2);flex:0 0 140px}
+.ir input[type=range]{flex:1;accent-color:var(--blue);cursor:pointer}
+.iv{font-size:12px;font-weight:600;color:var(--text);min-width:72px;text-align:right}
+.bdg{display:inline-block;font-size:10px;padding:1px 5px;border-radius:4px;margin-left:3px;vertical-align:middle}
+.bg{background:#EAF3DE;color:#3B6D11}.bb{background:#E6F1FB;color:#185FA5}.ba{background:#FAEEDA;color:#854F0B}
+.lg{display:flex;flex-wrap:wrap;gap:10px;margin-bottom:8px}
+.li{display:flex;align-items:center;gap:4px;font-size:11px;color:var(--text2)}
+.ld{width:9px;height:9px;border-radius:2px;flex-shrink:0}
+.cw{position:relative;width:100%}
+.tr{display:flex;align-items:center;gap:8px;margin-bottom:10px}
+.tl{font-size:12px;color:var(--text2);flex:0 0 140px}
+.tog{position:relative;width:36px;height:20px;flex-shrink:0}
+.tog input{opacity:0;width:0;height:0}
+.ts{position:absolute;inset:0;background:var(--border2);border-radius:20px;cursor:pointer;transition:.2s}
+.ts:before{content:"";position:absolute;height:14px;width:14px;left:3px;bottom:3px;background:white;border-radius:50%;transition:.2s}
+.tog input:checked+.ts{background:var(--blue)}
+.tog input:checked+.ts:before{transform:translateX(16px)}
+.tv{font-size:12px;font-weight:600;color:var(--text)}
+.alert{background:#FCEBEB;border:1px solid #F09595;border-radius:var(--r);padding:10px 14px;font-size:12px;color:#791F1F;margin-bottom:14px;display:none}
+.er{display:flex;justify-content:space-between;align-items:center;padding:9px 0;border-bottom:1px solid var(--border);font-size:12px}
+.er:last-child{border-bottom:none}
+.el{color:var(--text2);display:flex;align-items:center;gap:5px}
+.ev{font-weight:600;color:var(--text)}.ev.ng{color:var(--red)}.ev.ok{color:var(--green)}
+.ea{font-size:10px;background:var(--bg2);padding:2px 6px;border-radius:4px;color:var(--text2)}
+.dr{display:flex;justify-content:space-between;align-items:center;padding:7px 0;border-bottom:1px solid var(--border);font-size:12px}
+.dr:last-child{border-bottom:none}
+.dl{color:var(--text2)}.dv{font-weight:600;color:var(--text)}
+.dv.ng{color:var(--red)}.dv.ok{color:var(--green)}
+.lt{display:flex;justify-content:space-between;align-items:center;background:var(--bg2);border-radius:var(--r);padding:10px 14px;margin-top:10px;margin-bottom:4px}
+.lt-l{font-size:12px;color:var(--text2)}.lt-v{font-size:16px;font-weight:600;color:var(--text)}
+.pw{display:flex;align-items:center;gap:16px;margin-top:12px;flex-wrap:wrap}
+.pl{flex:1;min-width:160px;display:flex;flex-direction:column;gap:5px}
+.pr{display:flex;justify-content:space-between;font-size:11px;color:var(--text2)}
+.pr span:last-child{font-weight:600;color:var(--text)}
+select{background:var(--bg);color:var(--text);border:1px solid var(--border2);border-radius:var(--r);padding:4px 8px}
+</style>
+</head>
+<body>
+<div class="wrap">
+<h1>資産形成シミュレーター</h1>
+<p class="sub">NISA・iDeCo・積み立て保険・生活費・費用イベントの総合シミュレーション</p>
+<div class="nav">
+  <button class="nb on" onclick="nav('ov',this)">📊 概要</button>
+  <button class="nb" onclick="nav('ba',this)">⚙️ 収入・運用</button>
+  <button class="nb" onclick="nav('lv',this)">🏪 生活費</button>
+  <button class="nb" onclick="nav('ev',this)">📋 費用イベント</button>
+  <button class="nb" onclick="nav('dt',this)">📑 詳細</button>
+  <button class="nb share-btn" onclick="openShare()" style="margin-left:auto;color:var(--blue);font-weight:600">📤 データ共有</button>
+</div>
+<div id="share-overlay" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:100;align-items:center;justify-content:center">
+  <div style="background:var(--bg);border-radius:var(--rl);padding:24px;width:92%;max-width:520px;max-height:90vh;overflow-y:auto">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px">
+      <span style="font-size:15px;font-weight:600">データ共有</span>
+      <button onclick="closeShare()" style="border:none;background:transparent;font-size:20px;cursor:pointer;color:var(--text2)">✕</button>
+    </div>
+    <div style="display:flex;gap:8px;margin-bottom:16px">
+      <button class="share-tab on" id="stab-url" onclick="switchShareTab('url',this)" style="flex:1;padding:8px;border:1px solid var(--border2);border-radius:var(--r);background:var(--blue);color:white;cursor:pointer;font-size:13px">🔗 URL共有</button>
+      <button class="share-tab" id="stab-json" onclick="switchShareTab('json',this)" style="flex:1;padding:8px;border:1px solid var(--border2);border-radius:var(--r);background:var(--bg2);color:var(--text);cursor:pointer;font-size:13px">📋 JSONコピー</button>
+      <button class="share-tab" id="stab-text" onclick="switchShareTab('text',this)" style="flex:1;padding:8px;border:1px solid var(--border2);border-radius:var(--r);background:var(--bg2);color:var(--text);cursor:pointer;font-size:13px">📝 テキスト</button>
+    </div>
+    <div id="share-url" class="share-panel">
+      <p style="font-size:12px;color:var(--text2);margin-bottom:8px">現在の設定をURLに埋め込んで共有できます。リンクを開くと同じ設定が再現されます。</p>
+      <textarea id="share-url-text" readonly style="width:100%;height:80px;font-size:11px;border:1px solid var(--border2);border-radius:var(--r);padding:8px;background:var(--bg2);color:var(--text);resize:none;font-family:monospace"></textarea>
+      <button onclick="copyText('share-url-text')" style="margin-top:8px;width:100%;padding:10px;background:var(--blue);color:white;border:none;border-radius:var(--r);cursor:pointer;font-size:13px;font-weight:600" id="copy-url-btn">URLをコピー</button>
+    </div>
+    <div id="share-json" class="share-panel" style="display:none">
+      <p style="font-size:12px;color:var(--text2);margin-bottom:8px">設定データをJSONで書き出します。ファイルとして保存・読み込みができます。</p>
+      <textarea id="share-json-text" readonly style="width:100%;height:160px;font-size:11px;border:1px solid var(--border2);border-radius:var(--r);padding:8px;background:var(--bg2);color:var(--text);resize:none;font-family:monospace"></textarea>
+      <div style="display:flex;gap:8px;margin-top:8px">
+        <button onclick="copyText('share-json-text')" style="flex:1;padding:10px;background:var(--blue);color:white;border:none;border-radius:var(--r);cursor:pointer;font-size:13px;font-weight:600" id="copy-json-btn">JSONをコピー</button>
+        <button onclick="downloadJSON()" style="flex:1;padding:10px;background:var(--bg2);color:var(--text);border:1px solid var(--border2);border-radius:var(--r);cursor:pointer;font-size:13px">💾 ダウンロード</button>
+      </div>
+      <div style="margin-top:12px;border-top:1px solid var(--border);padding-top:12px">
+        <p style="font-size:12px;color:var(--text2);margin-bottom:6px">JSONを読み込んで設定を復元</p>
+        <textarea id="import-json-text" placeholder="JSONをここに貼り付けてEnter" style="width:100%;height:80px;font-size:11px;border:1px solid var(--border2);border-radius:var(--r);padding:8px;background:var(--bg2);color:var(--text);resize:none;font-family:monospace"></textarea>
+        <button onclick="importJSON()" style="margin-top:6px;width:100%;padding:10px;background:var(--green);color:white;border:none;border-radius:var(--r);cursor:pointer;font-size:13px;font-weight:600">設定を読み込む</button>
+      </div>
+    </div>
+    <div id="share-text" class="share-panel" style="display:none">
+      <p style="font-size:12px;color:var(--text2);margin-bottom:8px">LINEやメールで送れるテキスト形式のサマリーです。</p>
+      <textarea id="share-text-area" readonly style="width:100%;height:260px;font-size:12px;border:1px solid var(--border2);border-radius:var(--r);padding:8px;background:var(--bg2);color:var(--text);resize:none"></textarea>
+      <button onclick="copyText('share-text-area')" style="margin-top:8px;width:100%;padding:10px;background:var(--blue);color:white;border:none;border-radius:var(--r);cursor:pointer;font-size:13px;font-weight:600" id="copy-text-btn">テキストをコピー</button>
+    </div>
+  </div>
+</div>
+
+<!-- 概要 -->
+<div id="pg-ov" class="pg on">
+  <div id="alert-box" class="alert"></div>
+  <div class="g4">
+    <div class="mc"><div class="ml">目標時の純資産</div><div class="mv" id="m-net">—</div><div class="ms" id="m-net-age">—</div></div>
+    <div class="mc"><div class="ml">月間収支</div><div class="mv" id="m-bal">—</div><div class="ms" id="m-bal-sub">—</div></div>
+    <div class="mc"><div class="ml">月間生活費合計</div><div class="mv" id="m-liv">—</div><div class="ms">手取りの<span id="m-liv-pct">—</span></div></div>
+    <div class="mc"><div class="ml">累計費用支出</div><div class="mv ng" id="m-cost">—</div><div class="ms">大型出費の合計</div></div>
+  </div>
+  <div class="card">
+    <div class="lg">
+      <span class="li"><span class="ld" style="background:#378ADD"></span>純資産</span>
+      <span class="li"><span class="ld" style="background:#B5D4F4;border:1px dashed #378ADD"></span>元本</span>
+      <span class="li"><span class="ld" style="background:#E24B4A"></span>費用イベント</span>
+    </div>
+    <div class="cw" style="height:260px"><canvas id="c-main" role="img" aria-label="年齢別純資産推移"></canvas></div>
+  </div>
+  <div class="card">
+    <div class="lg">
+      <span class="li"><span class="ld" style="background:#378ADD"></span>NISA</span>
+      <span class="li"><span class="ld" style="background:#EF9F27"></span>iDeCo</span>
+      <span class="li"><span class="ld" style="background:#D4537E"></span>積み立て保険</span>
+      <span class="li"><span class="ld" style="background:#1D9E75"></span>預金・貯金</span>
+    </div>
+    <div class="cw" style="height:200px"><canvas id="c-stack" role="img" aria-label="年齢別資産内訳"></canvas></div>
+  </div>
+</div>
+
+<!-- 収入・運用 -->
+<div id="pg-ba" class="pg">
+  <div class="g2">
+    <div class="card">
+      <div class="st">👤 基本設定</div>
+      <div class="ir"><span class="il">現在の年齢</span><input type="range" id="age-now" min="20" max="55" step="1" value="33"><span class="iv" id="v-age-now">33 歳</span></div>
+      <div class="ir"><span class="il">目標年齢</span><input type="range" id="age-target" min="50" max="70" step="1" value="60"><span class="iv" id="v-age-target">60 歳</span></div>
+      <div class="ir"><span class="il">月収（手取り）</span><input type="range" id="income" min="20" max="120" step="1" value="55"><span class="iv" id="v-income">55 万円</span></div>
+      <div class="ir"><span class="il">現在の貯蓄残高</span><input type="range" id="sav-now" min="0" max="3000" step="50" value="300"><span class="iv" id="v-sav-now">300 万円</span></div>
+      <div class="ir"><span class="il">月々の貯金</span><input type="range" id="m-sav" min="0" max="20" step="0.5" value="3"><span class="iv" id="v-m-sav">3.0 万円</span></div>
+    </div>
+    <div class="card">
+      <div class="st">📈 運用設定</div>
+      <div class="ir"><span class="il">NISA 月額 <span class="bdg bg">非課税</span></span><input type="range" id="nisa" min="0" max="30" step="0.5" value="10"><span class="iv" id="v-nisa">10.0 万円</span></div>
+      <div class="ir"><span class="il">NISA 年率</span><input type="range" id="nisa-r" min="1" max="10" step="0.5" value="5"><span class="iv" id="v-nisa-r">5.0 %</span></div>
+      <div class="ir"><span class="il">iDeCo 月額 <span class="bdg bb">控除</span></span><input type="range" id="ideco" min="0" max="5.5" step="0.1" value="2.3"><span class="iv" id="v-ideco">2.3 万円</span></div>
+      <div class="ir"><span class="il">iDeCo 年率</span><input type="range" id="ideco-r" min="1" max="8" step="0.5" value="4"><span class="iv" id="v-ideco-r">4.0 %</span></div>
+      <div class="ir"><span class="il">積み立て保険 月額 <span class="bdg ba">保障</span></span><input type="range" id="ins" min="0" max="10" step="0.5" value="2"><span class="iv" id="v-ins">2.0 万円</span></div>
+      <div class="ir"><span class="il">保険 利回り</span><input type="range" id="ins-r" min="0.5" max="3" step="0.1" value="1.5"><span class="iv" id="v-ins-r">1.5 %</span></div>
+      <div class="ir"><span class="il">預金 年利</span><input type="range" id="dep-r" min="0" max="2" step="0.05" value="0.3"><span class="iv" id="v-dep-r">0.30 %</span></div>
+    </div>
+  </div>
+</div>
+
+<!-- 生活費 -->
+<div id="pg-lv" class="pg">
+  <div class="g2">
+    <div class="card">
+      <div class="st">🍳 食費・日用品</div>
+      <div class="ir"><span class="il">食費</span><input type="range" id="l-food" min="2" max="15" step="0.5" value="5"><span class="iv" id="v-l-food">5.0 万円</span></div>
+      <div class="ir"><span class="il">外食・飲み代</span><input type="range" id="l-eat-out" min="0" max="10" step="0.5" value="3"><span class="iv" id="v-l-eat-out">3.0 万円</span></div>
+      <div class="ir"><span class="il">日用品・消耗品</span><input type="range" id="l-daily" min="0.5" max="5" step="0.5" value="1.5"><span class="iv" id="v-l-daily">1.5 万円</span></div>
+    </div>
+    <div class="card">
+      <div class="st">🏠 住居費</div>
+      <div class="ir"><span class="il">家賃 / ローン</span><input type="range" id="l-rent" min="0" max="30" step="0.5" value="12"><span class="iv" id="v-l-rent">12.0 万円</span></div>
+      <div class="ir"><span class="il">管理費・駐車場</span><input type="range" id="l-mgmt" min="0" max="5" step="0.5" value="1.5"><span class="iv" id="v-l-mgmt">1.5 万円</span></div>
+      <div class="ir"><span class="il">水道・光熱費</span><input type="range" id="l-util" min="0.5" max="5" step="0.5" value="1.5"><span class="iv" id="v-l-util">1.5 万円</span></div>
+    </div>
+    <div class="card">
+      <div class="st">📱 通信・サブスク</div>
+      <div class="ir"><span class="il">スマホ・通信費</span><input type="range" id="l-tel" min="0.5" max="5" step="0.5" value="1.5"><span class="iv" id="v-l-tel">1.5 万円</span></div>
+      <div class="ir"><span class="il">サブスク・動画等</span><input type="range" id="l-sub" min="0" max="3" step="0.5" value="0.5"><span class="iv" id="v-l-sub">0.5 万円</span></div>
+      <div class="ir"><span class="il">インターネット</span><input type="range" id="l-net" min="0" max="2" step="0.1" value="0.5"><span class="iv" id="v-l-net">0.5 万円</span></div>
+    </div>
+    <div class="card">
+      <div class="st">💪 健康・美容・趣味</div>
+      <div class="ir"><span class="il">ジム・スポーツ</span><input type="range" id="l-gym" min="0" max="5" step="0.5" value="1"><span class="iv" id="v-l-gym">1.0 万円</span></div>
+      <div class="ir"><span class="il">美容・衣服</span><input type="range" id="l-beauty" min="0" max="5" step="0.5" value="1.5"><span class="iv" id="v-l-beauty">1.5 万円</span></div>
+      <div class="ir"><span class="il">趣味・娯楽</span><input type="range" id="l-hobby" min="0" max="10" step="0.5" value="2"><span class="iv" id="v-l-hobby">2.0 万円</span></div>
+    </div>
+    <div class="card">
+      <div class="st">🚃 交通費</div>
+      <div class="ir"><span class="il">電車・バス</span><input type="range" id="l-train" min="0" max="5" step="0.5" value="1"><span class="iv" id="v-l-train">1.0 万円</span></div>
+      <div class="ir"><span class="il">ガソリン・高速</span><input type="range" id="l-gas" min="0" max="5" step="0.5" value="1.5"><span class="iv" id="v-l-gas">1.5 万円</span></div>
+      <div class="ir"><span class="il">タクシー・その他</span><input type="range" id="l-taxi" min="0" max="3" step="0.5" value="0.5"><span class="iv" id="v-l-taxi">0.5 万円</span></div>
+    </div>
+    <div class="card">
+      <div class="st">🤝 交際・その他</div>
+      <div class="ir"><span class="il">交際費・ギフト</span><input type="range" id="l-social" min="0" max="5" step="0.5" value="1.5"><span class="iv" id="v-l-social">1.5 万円</span></div>
+      <div class="ir"><span class="il">医療費・薬代</span><input type="range" id="l-med" min="0" max="3" step="0.5" value="0.5"><span class="iv" id="v-l-med">0.5 万円</span></div>
+      <div class="ir"><span class="il">その他・雑費</span><input type="range" id="l-misc" min="0" max="5" step="0.5" value="1"><span class="iv" id="v-l-misc">1.0 万円</span></div>
+    </div>
+  </div>
+  <div class="card">
+    <div class="lt"><span class="lt-l">月間生活費合計</span><span class="lt-v" id="living-total">— 万円</span></div>
+    <div class="pw">
+      <div style="position:relative;width:150px;height:150px;flex-shrink:0"><canvas id="c-pie" width="150" height="150" role="img" aria-label="生活費内訳円グラフ"></canvas></div>
+      <div class="pl" id="pie-labels"></div>
+    </div>
+  </div>
+</div>
+
+<!-- 費用イベント -->
+<div id="pg-ev" class="pg">
+  <div class="g2">
+    <div class="card">
+      <div class="st">🏠 住宅</div>
+      <div class="tr"><span class="tl">住宅購入</span><label class="tog"><input type="checkbox" id="t-house" checked onchange="sim()"><span class="ts"></span></label><span class="tv" id="tv-house">あり</span></div>
+      <div class="ir"><span class="il">購入年齢</span><input type="range" id="house-age" min="25" max="50" step="1" value="36"><span class="iv" id="v-house-age">36 歳</span></div>
+      <div class="ir"><span class="il">物件価格</span><input type="range" id="house-price" min="1000" max="10000" step="100" value="5000"><span class="iv" id="v-house-price">5000 万円</span></div>
+      <div class="ir"><span class="il">頭金</span><input type="range" id="house-down" min="0" max="30" step="1" value="10"><span class="iv" id="v-house-down">10 %</span></div>
+      <div class="ir"><span class="il">ローン追加月額</span><input type="range" id="house-loan" min="0" max="15" step="0.5" value="0"><span class="iv" id="v-house-loan">0.0 万円</span></div>
+      <div class="ir"><span class="il">修繕費（年）</span><input type="range" id="house-maint" min="0" max="100" step="5" value="20"><span class="iv" id="v-house-maint">20 万円</span></div>
+    </div>
+    <div class="card">
+      <div class="st">🚗 自動車</div>
+      <div class="tr"><span class="tl">車の購入</span><label class="tog"><input type="checkbox" id="t-car" checked onchange="sim()"><span class="ts"></span></label><span class="tv" id="tv-car">あり</span></div>
+      <div class="ir"><span class="il">初回購入年齢</span><input type="range" id="car-age" min="20" max="50" step="1" value="35"><span class="iv" id="v-car-age">35 歳</span></div>
+      <div class="ir"><span class="il">車両費用</span><input type="range" id="car-price" min="100" max="800" step="10" value="300"><span class="iv" id="v-car-price">300 万円</span></div>
+      <div class="ir"><span class="il">買い替え周期</span><input type="range" id="car-cycle" min="3" max="15" step="1" value="7"><span class="iv" id="v-car-cycle">7 年</span></div>
+    </div>
+    <div class="card">
+      <div class="st">🎓 子供の教育</div>
+      <div class="tr"><span class="tl">教育費</span><label class="tog"><input type="checkbox" id="t-edu" checked onchange="sim()"><span class="ts"></span></label><span class="tv" id="tv-edu">あり</span></div>
+      <div class="ir"><span class="il">子供の現在年齢</span><input type="range" id="child-age" min="0" max="15" step="1" value="5"><span class="iv" id="v-child-age">5 歳</span></div>
+      <div class="ir"><span class="il">教育方針</span>
+        <select id="edu-type" style="flex:1;font-size:12px">
+          <option value="public">公立中心（〜200万）</option>
+          <option value="private" selected>私立中心（〜350万）</option>
+          <option value="full">全私立（〜600万）</option>
+        </select>
+      </div>
+      <div class="ir"><span class="il">大学費用（一時）</span><input type="range" id="univ-cost" min="200" max="1000" step="50" value="500"><span class="iv" id="v-univ-cost">500 万円</span></div>
+      <div class="ir"><span class="il">月々の教育費</span><input type="range" id="edu-m" min="1" max="20" step="0.5" value="5"><span class="iv" id="v-edu-m">5.0 万円</span></div>
+    </div>
+    <div class="card">
+      <div class="st">🏥 医療・介護・援助</div>
+      <div class="tr"><span class="tl">医療一時費用</span><label class="tog"><input type="checkbox" id="t-med" checked onchange="sim()"><span class="ts"></span></label><span class="tv" id="tv-med">あり</span></div>
+      <div class="ir"><span class="il">医療一時費用</span><input type="range" id="med-lump" min="0" max="500" step="25" value="100"><span class="iv" id="v-med-lump">100 万円</span></div>
+      <div class="tr"><span class="tl">親の介護費用</span><label class="tog"><input type="checkbox" id="t-care" checked onchange="sim()"><span class="ts"></span></label><span class="tv" id="tv-care">あり</span></div>
+      <div class="ir"><span class="il">介護発生年齢</span><input type="range" id="care-age" min="45" max="65" step="1" value="55"><span class="iv" id="v-care-age">55 歳</span></div>
+      <div class="ir"><span class="il">介護費用（総額）</span><input type="range" id="care-cost" min="0" max="500" step="25" value="150"><span class="iv" id="v-care-cost">150 万円</span></div>
+      <div class="tr"><span class="tl">娘への援助</span><label class="tog"><input type="checkbox" id="t-gift" checked onchange="sim()"><span class="ts"></span></label><span class="tv" id="tv-gift">あり</span></div>
+      <div class="ir"><span class="il">援助年齢（自分）</span><input type="range" id="gift-age" min="45" max="65" step="1" value="55"><span class="iv" id="v-gift-age">55 歳</span></div>
+      <div class="ir"><span class="il">援助額</span><input type="range" id="gift-cost" min="0" max="300" step="10" value="100"><span class="iv" id="v-gift-cost">100 万円</span></div>
+    </div>
+  </div>
+</div>
+
+<!-- 詳細 -->
+<div id="pg-dt" class="pg">
+  <div class="g2">
+    <div class="card"><div class="st">月次収支内訳</div><div id="d-monthly"></div></div>
+    <div class="card"><div class="st">目標時資産内訳</div><div id="d-asset"></div></div>
+  </div>
+  <div class="card"><div class="st">費用イベント一覧</div><div id="d-events"></div></div>
+</div>
+</div>
+
+<script>
+var cMain = null, cStack = null, cPie = null;
+
+function gv(id) { return parseFloat(document.getElementById(id).value); }
+function gc(id) { return document.getElementById(id).checked; }
+function sv(id, t) { var el = document.getElementById(id); if (el) el.textContent = t; }
+function fv(v, d) { return v.toFixed(d === undefined ? 1 : d); }
+function fm(v) { return Math.round(v).toLocaleString('ja-JP'); }
+
+function calcFV(m, r, y, s) {
+  var mo = r / 100 / 12;
+  var n = y * 12;
+  if (mo === 0) return s + m * n;
+  return s * Math.pow(1 + mo, n) + m * (Math.pow(1 + mo, n) - 1) / mo;
+}
+
+function getLiving() {
+  var ids = ['food','eat-out','daily','rent','mgmt','util','tel','sub','net','gym','beauty','hobby','train','gas','taxi','social','med','misc'];
+  var labels = ['食費','外食・飲み','日用品','家賃/ローン','管理費等','光熱費','スマホ','サブスク','ネット','ジム','美容・衣服','趣味','電車','ガソリン','タクシー','交際費','医療','雑費'];
+  var colors = ['#378ADD','#5DCAA5','#1D9E75','#D85A30','#EF9F27','#BA7517','#7F77DD','#AFA9EC','#534AB7','#D4537E','#ED93B1','#993556','#888780','#B4B2A9','#5F5E5A','#E24B4A','#F09595','#A32D2D'];
+  var total = 0;
+  var items = ids.map(function(id, i) {
+    var v = gv('l-' + id);
+    sv('v-l-' + id, fv(v) + ' 万円');
+    total += v;
+    return { label: labels[i], val: v, color: colors[i] };
+  });
+  return { total: total, items: items };
+}
+
+function sim() {
+  var ageNow = gv('age-now'), ageTgt = gv('age-target'), income = gv('income');
+  var savNow = gv('sav-now'), mSav = gv('m-sav');
+  var nisaM = gv('nisa'), nisaR = gv('nisa-r');
+  var idecoM = gv('ideco'), idecoR = gv('ideco-r');
+  var insM = gv('ins'), insR = gv('ins-r');
+  var depR = gv('dep-r');
+  var yrs = ageTgt - ageNow;
+
+  sv('v-age-now', ageNow + ' 歳'); sv('v-age-target', ageTgt + ' 歳');
+  sv('v-income', income + ' 万円'); sv('v-sav-now', savNow + ' 万円');
+  sv('v-m-sav', fv(mSav) + ' 万円');
+  sv('v-nisa', fv(nisaM) + ' 万円'); sv('v-nisa-r', fv(nisaR) + ' %');
+  sv('v-ideco', fv(idecoM) + ' 万円'); sv('v-ideco-r', fv(idecoR) + ' %');
+  sv('v-ins', fv(insM) + ' 万円'); sv('v-ins-r', fv(insR) + ' %');
+  sv('v-dep-r', fv(depR, 2) + ' %');
+
+  var liv = getLiving();
+  sv('living-total', fv(liv.total) + ' 万円');
+  updatePie(liv);
+
+  var hOn = gc('t-house'), carOn = gc('t-car'), eduOn = gc('t-edu');
+  var medOn = gc('t-med'), careOn = gc('t-care'), giftOn = gc('t-gift');
+  sv('tv-house', hOn ? 'あり' : 'なし'); sv('tv-car', carOn ? 'あり' : 'なし');
+  sv('tv-edu', eduOn ? 'あり' : 'なし'); sv('tv-med', medOn ? 'あり' : 'なし');
+  sv('tv-care', careOn ? 'あり' : 'なし'); sv('tv-gift', giftOn ? 'あり' : 'なし');
+
+  var hAge = gv('house-age'), hPrice = gv('house-price'), hDownPct = gv('house-down') / 100;
+  var hLoan = gv('house-loan'), hMaint = gv('house-maint');
+  sv('v-house-age', hAge + ' 歳'); sv('v-house-price', hPrice + ' 万円');
+  sv('v-house-down', gv('house-down') + ' %'); sv('v-house-loan', fv(hLoan) + ' 万円');
+  sv('v-house-maint', hMaint + ' 万円');
+
+  var carAge = gv('car-age'), carPrice = gv('car-price'), carCycle = gv('car-cycle');
+  sv('v-car-age', carAge + ' 歳'); sv('v-car-price', carPrice + ' 万円'); sv('v-car-cycle', carCycle + ' 年');
+
+  var childAge = gv('child-age'), univCost = gv('univ-cost'), eduMth = gv('edu-m');
+  var eduMap = { public: 200, private: 350, full: 600 };
+  var eduSchool = eduMap[document.getElementById('edu-type').value];
+  sv('v-child-age', childAge + ' 歳'); sv('v-univ-cost', univCost + ' 万円'); sv('v-edu-m', fv(eduMth) + ' 万円');
+
+  var medLump = gv('med-lump'), careAge = gv('care-age'), careCost = gv('care-cost');
+  var giftAge = gv('gift-age'), giftCost = gv('gift-cost');
+  sv('v-med-lump', medLump + ' 万円'); sv('v-care-age', careAge + ' 歳');
+  sv('v-care-cost', careCost + ' 万円'); sv('v-gift-age', giftAge + ' 歳'); sv('v-gift-cost', giftCost + ' 万円');
+
+  var nisaV = 0, idecoV = 0, insV = 0, depV = savNow, totalCost = 0;
+  var labels = [], netArr = [], prinArr = [], nisaArr = [], idecoArr = [], insArr = [], depArr = [];
+  var evList = [];
+
+  for (var y = 0; y <= yrs; y++) {
+    var age = ageNow + y;
+    labels.push(age + '歳');
+    var lump = 0;
+
+    if (hOn && age === hAge) {
+      lump += hPrice * hDownPct;
+      evList.push({ age: age, label: '住宅頭金', cost: Math.round(hPrice * hDownPct), icon: '🏠' });
+    }
+
+    if (carOn) {
+      var since = age - carAge;
+      if (age === carAge || (since > 0 && since % carCycle === 0)) {
+        lump += carPrice;
+        evList.push({ age: age, label: '車両購入', cost: carPrice, icon: '🚗' });
+      }
+    }
+
+    if (eduOn) {
+      var curChildAge = childAge + (age - ageNow);
+      if (curChildAge === 18) {
+        lump += univCost + eduSchool;
+        evList.push({ age: age, label: '大学入学費用', cost: univCost + eduSchool, icon: '🎓' });
+      }
+    }
+
+    if (medOn && age === Math.round(ageNow + yrs * 0.6)) {
+      lump += medLump;
+      evList.push({ age: age, label: '医療・緊急費用', cost: medLump, icon: '🏥' });
+    }
+
+    if (careOn && age === careAge) {
+      lump += careCost;
+      evList.push({ age: age, label: '親の介護費用', cost: careCost, icon: '❤️' });
+    }
+
+    if (giftOn && age === giftAge) {
+      lump += giftCost;
+      evList.push({ age: age, label: '娘への援助', cost: giftCost, icon: '🎁' });
+    }
+
+    nisaV = calcFV(nisaM, nisaR, 1, nisaV);
+    idecoV = calcFV(idecoM, idecoR, 1, idecoV);
+    insV = calcFV(insM, insR, 1, insV);
+    depV = calcFV(mSav, depR, 1, depV);
+    depV -= lump;
+    if (depV < 0) {
+      nisaV = Math.max(0, nisaV + depV);
+      depV = 0;
+    }
+
+    totalCost += lump;
+    var net = Math.max(0, nisaV + idecoV + insV + depV);
+    var prin = (nisaM + idecoM + insM + mSav) * 12 * y + savNow;
+    netArr.push(Math.round(net));
+    prinArr.push(Math.round(prin));
+    nisaArr.push(Math.round(nisaV));
+    idecoArr.push(Math.round(idecoV));
+    insArr.push(Math.round(insV));
+    depArr.push(Math.round(depV));
+  }
+
+  var finalNet = netArr[netArr.length - 1];
+  var finalPrin = prinArr[prinArr.length - 1];
+  var invest = nisaM + idecoM + insM + mSav;
+  var totalOut = liv.total + invest;
+  var balance = income - totalOut;
+  var livPct = Math.round(liv.total / income * 100);
+
+  sv('m-net', fm(finalNet) + '万円');
+  sv('m-net-age', ageTgt + '歳時点');
+  document.getElementById('m-net').className = 'mv ' + (finalNet > 5000 ? 'ok' : finalNet > 1000 ? 'warn' : 'ng');
+  sv('m-bal', (balance >= 0 ? '+' : '') + fv(balance) + '万円/月');
+  sv('m-bal-sub', '収入' + income + '万 − 支出' + fv(totalOut) + '万');
+  document.getElementById('m-bal').className = 'mv ' + (balance >= 0 ? 'ok' : 'ng');
+  sv('m-liv', fv(liv.total) + '万円/月');
+  sv('m-liv-pct', livPct + '%');
+  sv('m-cost', fm(totalCost) + '万円');
+
+  var ab = document.getElementById('alert-box');
+  if (balance < 0) {
+    ab.style.display = 'block';
+    ab.innerHTML = '⚠️ 月間収支がマイナス（' + fv(balance) + '万円）です。生活費・投資額を見直してください。';
+  } else if (finalNet < 1000) {
+    ab.style.display = 'block';
+    ab.innerHTML = 'ℹ️ 目標時の純資産が1,000万円を下回っています。';
+  } else {
+    ab.style.display = 'none';
+  }
+
+  updateMain(labels, netArr, prinArr, evList, ageNow);
+  updateStack(labels, nisaArr, idecoArr, insArr, depArr);
+  updateDetail(income, liv, invest, balance, totalOut, evList, finalNet, finalPrin,
+    nisaArr[nisaArr.length-1], idecoArr[idecoArr.length-1], insArr[insArr.length-1], depArr[depArr.length-1], totalCost, ageTgt);
+}
+
+function ytick(v) {
+  var t = v / 10000;
+  return t >= 1 ? t.toFixed(1) + '億' : (Math.round(v / 100) / 10) + '千万';
+}
+
+function updatePie(liv) {
+  if (cPie) cPie.destroy();
+  var ctx = document.getElementById('c-pie').getContext('2d');
+  var filtered = liv.items.filter(function(i) { return i.val > 0; });
+  cPie = new Chart(ctx, {
+    type: 'doughnut',
+    data: {
+      labels: filtered.map(function(i) { return i.label; }),
+      datasets: [{
+        data: filtered.map(function(i) { return i.val; }),
+        backgroundColor: filtered.map(function(i) { return i.color; }),
+        borderWidth: 1,
+        borderColor: 'rgba(255,255,255,0.5)'
+      }]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      cutout: '65%',
+      plugins: {
+        legend: { display: false },
+        tooltip: { callbacks: { label: function(c) { return c.label + ': ' + c.raw.toFixed(1) + '万円'; } } }
+      }
+    }
+  });
+  var pl = document.getElementById('pie-labels');
+  pl.innerHTML = filtered.slice(0, 9).map(function(i) {
+    return '<div class="pr"><span style="display:flex;align-items:center;gap:4px"><span style="width:8px;height:8px;border-radius:2px;background:' + i.color + ';flex-shrink:0"></span>' + i.label + '</span><span>' + i.val.toFixed(1) + '万</span></div>';
+  }).join('');
+}
+
+function updateMain(labels, netArr, prinArr, evList, ageNow) {
+  if (cMain) cMain.destroy();
+  var ctx = document.getElementById('c-main').getContext('2d');
+  cMain = new Chart(ctx, {
+    type: 'line',
+    data: {
+      labels: labels,
+      datasets: [
+        {
+          label: '純資産',
+          data: netArr,
+          borderColor: '#378ADD',
+          backgroundColor: 'rgba(55,138,221,0.07)',
+          borderWidth: 2.5,
+          fill: true,
+          tension: 0.4,
+          pointRadius: 0
+        },
+        {
+          label: '元本',
+          data: prinArr,
+          borderColor: '#B5D4F4',
+          borderDash: [5, 3],
+          borderWidth: 1.5,
+          fill: false,
+          tension: 0,
+          pointRadius: 0
+        },
+        {
+          label: '費用イベント',
+          data: labels.map(function(l, i) {
+            var age = ageNow + i;
+            return evList.find(function(e) { return e.age === age; }) ? netArr[i] : null;
+          }),
+          borderColor: '#E24B4A',
+          backgroundColor: '#E24B4A',
+          pointRadius: 6,
+          pointStyle: 'triangle',
+          showLine: false,
+          borderWidth: 0
+        }
+      ]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: {
+        legend: { display: false },
+        tooltip: { callbacks: { label: function(c) { return c.dataset.label + ': ' + fm(c.raw || 0) + '万円'; } } }
+      },
+      scales: {
+        x: { grid: { color: 'rgba(128,128,128,0.07)' }, ticks: { font: { size: 11 }, maxTicksLimit: 10 } },
+        y: { grid: { color: 'rgba(128,128,128,0.07)' }, ticks: { font: { size: 11 }, callback: ytick } }
+      }
+    }
+  });
+}
+
+function updateStack(labels, nisaArr, idecoArr, insArr, depArr) {
+  if (cStack) cStack.destroy();
+  var ctx = document.getElementById('c-stack').getContext('2d');
+  cStack = new Chart(ctx, {
+    type: 'bar',
+    data: {
+      labels: labels,
+      datasets: [
+        { label: 'NISA', data: nisaArr, backgroundColor: 'rgba(55,138,221,0.85)', stack: 's' },
+        { label: 'iDeCo', data: idecoArr, backgroundColor: 'rgba(239,159,39,0.85)', stack: 's' },
+        { label: '積み立て保険', data: insArr, backgroundColor: 'rgba(212,83,126,0.85)', stack: 's' },
+        { label: '預金・貯金', data: depArr, backgroundColor: 'rgba(29,158,117,0.85)', stack: 's' }
+      ]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: {
+        legend: { display: false },
+        tooltip: { callbacks: { label: function(c) { return c.dataset.label + ': ' + fm(c.raw) + '万円'; } } }
+      },
+      scales: {
+        x: { stacked: true, grid: { display: false }, ticks: { font: { size: 11 }, maxTicksLimit: 10 } },
+        y: { stacked: true, grid: { color: 'rgba(128,128,128,0.07)' }, ticks: { font: { size: 11 }, callback: ytick } }
+      }
+    }
+  });
+}
+
+function updateDetail(income, liv, invest, balance, totalOut, evList, finalNet, finalPrin, nisaF, idecoF, insF, depF, totalCost, ageTgt) {
+  var dm = document.getElementById('d-monthly');
+  var rows = [
+    { label: '月収（手取り）', val: '+' + fv(income) + '万円', cls: 'ok' },
+    { label: '　生活費合計', val: '-' + fv(liv.total) + '万円', cls: 'ng' }
+  ];
+  liv.items.filter(function(i) { return i.val > 0; }).forEach(function(i) {
+    rows.push({ label: '　　' + i.label, val: '-' + fv(i.val) + '万円', cls: '' });
+  });
+  rows.push({ label: '　投資・貯蓄合計', val: '-' + fv(invest) + '万円', cls: 'ng' });
+  rows.push({ label: '月間収支', val: (balance >= 0 ? '+' : '') + fv(balance) + '万円', cls: balance >= 0 ? 'ok' : 'ng' });
+  dm.innerHTML = rows.map(function(r) {
+    return '<div class="dr"><span class="dl">' + r.label + '</span><span class="dv ' + r.cls + '">' + r.val + '</span></div>';
+  }).join('');
+
+  document.getElementById('d-asset').innerHTML =
+    '<div class="dr"><span class="dl">NISA</span><span class="dv">' + fm(nisaF) + '万円</span></div>' +
+    '<div class="dr"><span class="dl">iDeCo</span><span class="dv">' + fm(idecoF) + '万円</span></div>' +
+    '<div class="dr"><span class="dl">積み立て保険</span><span class="dv">' + fm(insF) + '万円</span></div>' +
+    '<div class="dr"><span class="dl">預金・貯金</span><span class="dv">' + fm(depF) + '万円</span></div>' +
+    '<div class="dr" style="border-top:2px solid var(--border2);margin-top:4px;padding-top:8px">' +
+      '<span class="dl" style="font-weight:600">純資産合計</span>' +
+      '<span class="dv ok" style="font-size:15px">' + fm(finalNet) + '万円</span>' +
+    '</div>' +
+    '<div class="dr"><span class="dl">元本合計</span><span class="dv">' + fm(finalPrin) + '万円</span></div>' +
+    '<div class="dr"><span class="dl">運用益</span><span class="dv ok">+' + fm(finalNet - finalPrin) + '万円</span></div>';
+
+  var uniq = [];
+  evList.forEach(function(e) {
+    if (!uniq.find(function(u) { return u.age === e.age && u.label === e.label; })) uniq.push(e);
+  });
+  if (uniq.length === 0) {
+    document.getElementById('d-events').innerHTML = '<div style="font-size:12px;color:var(--text2);padding:8px 0">費用イベントがありません。</div>';
+  } else {
+    document.getElementById('d-events').innerHTML = uniq.sort(function(a, b) { return a.age - b.age; }).map(function(e) {
+      return '<div class="er"><span class="el">' + e.icon + '<span class="ea">' + e.age + '歳</span>' + e.label + '</span><span class="ev ng">-' + fm(e.cost) + '万円</span></div>';
+    }).join('');
+  }
+}
+
+function nav(id, btn) {
+  document.querySelectorAll('.pg').forEach(function(p) { p.classList.remove('on'); });
+  document.querySelectorAll('.nb').forEach(function(b) { b.classList.remove('on'); });
+  document.getElementById('pg-' + id).classList.add('on');
+  btn.classList.add('on');
+  if (id === 'lv') {
+    if (cPie) cPie.destroy();
+    cPie = null;
+    updatePie(getLiving());
+  }
+}
+
+document.querySelectorAll('input[type=range],select').forEach(function(el) {
+  el.addEventListener('input', sim);
+});
+sim();
+
+// ── Share / Export ──────────────────────────────────────────────
+var _shareState = {};
+
+function collectState() {
+  var ids = ['age-now','age-target','income','sav-now','m-sav',
+    'nisa','nisa-r','ideco','ideco-r','ins','ins-r','dep-r',
+    'l-food','l-eat-out','l-daily','l-rent','l-mgmt','l-util',
+    'l-tel','l-sub','l-net','l-gym','l-beauty','l-hobby',
+    'l-train','l-gas','l-taxi','l-social','l-med','l-misc',
+    'house-age','house-price','house-down','house-loan','house-maint',
+    'car-age','car-price','car-cycle',
+    'child-age','univ-cost','edu-m',
+    'med-lump','care-age','care-cost','gift-age','gift-cost'];
+  var checks = ['t-house','t-car','t-edu','t-med','t-care','t-gift'];
+  var state = {};
+  ids.forEach(function(id) {
+    var el = document.getElementById(id);
+    if (el) state[id] = el.value;
+  });
+  checks.forEach(function(id) {
+    var el = document.getElementById(id);
+    if (el) state[id] = el.checked;
+  });
+  var sel = document.getElementById('edu-type');
+  if (sel) state['edu-type'] = sel.value;
+  return state;
+}
+
+function applyState(state) {
+  Object.keys(state).forEach(function(id) {
+    var el = document.getElementById(id);
+    if (!el) return;
+    if (el.type === 'checkbox') el.checked = state[id];
+    else if (el.tagName === 'SELECT') el.value = state[id];
+    else el.value = state[id];
+  });
+  sim();
+}
+
+function buildShareURL(state) {
+  var params = new URLSearchParams();
+  Object.keys(state).forEach(function(k) { params.set(k, state[k]); });
+  return location.href.split('?')[0] + '?' + params.toString();
+}
+
+function buildTextSummary(state) {
+  var net = document.getElementById('m-net').textContent;
+  var bal = document.getElementById('m-bal').textContent;
+  var liv = document.getElementById('m-liv').textContent;
+  var cost = document.getElementById('m-cost').textContent;
+  var age = document.getElementById('m-net-age').textContent;
+  var lines = [
+    '【資産形成シミュレーション結果】',
+    '──────────────',
+    '▶ 目標時の純資産: ' + net + '（' + age + '）',
+    '▶ 月間収支: ' + bal,
+    '▶ 月間生活費: ' + liv,
+    '▶ 累計費用支出: ' + cost,
+    '──────────────',
+    '■ 設定内容',
+    '現在年齢: ' + state['age-now'] + '歳 → 目標: ' + state['age-target'] + '歳',
+    '月収（手取り）: ' + state['income'] + '万円',
+    '現在の貯蓄: ' + state['sav-now'] + '万円',
+    '',
+    '■ 投資・運用',
+    'NISA: ' + state['nisa'] + '万円/月（年率' + state['nisa-r'] + '%）',
+    'iDeCo: ' + state['ideco'] + '万円/月（年率' + state['ideco-r'] + '%）',
+    '積み立て保険: ' + state['ins'] + '万円/月（' + state['ins-r'] + '%）',
+    '月々の貯金: ' + state['m-sav'] + '万円',
+    '',
+    '■ 主な生活費',
+    '食費: ' + state['l-food'] + '万 / 外食: ' + state['l-eat-out'] + '万 / 家賃: ' + state['l-rent'] + '万',
+    '光熱費: ' + state['l-util'] + '万 / スマホ: ' + state['l-tel'] + '万 / 趣味: ' + state['l-hobby'] + '万',
+    '',
+    '※ 資産形成シミュレーターで作成'
+  ];
+  return lines.join('\n');
+}
+
+function openShare() {
+  _shareState = collectState();
+  var url = buildShareURL(_shareState);
+  document.getElementById('share-url-text').value = url;
+  document.getElementById('share-json-text').value = JSON.stringify(_shareState, null, 2);
+  document.getElementById('share-text-area').value = buildTextSummary(_shareState);
+  var ov = document.getElementById('share-overlay');
+  ov.style.display = 'flex';
+}
+
+function closeShare() {
+  document.getElementById('share-overlay').style.display = 'none';
+}
+
+function switchShareTab(tab, btn) {
+  document.querySelectorAll('.share-panel').forEach(function(p) { p.style.display = 'none'; });
+  document.querySelectorAll('.share-tab').forEach(function(b) {
+    b.style.background = 'var(--bg2)'; b.style.color = 'var(--text)';
+  });
+  document.getElementById('share-' + tab).style.display = 'block';
+  btn.style.background = 'var(--blue)'; btn.style.color = 'white';
+}
+
+function copyText(id) {
+  var el = document.getElementById(id);
+  el.select();
+  document.execCommand('copy');
+  var btnMap = { 'share-url-text': 'copy-url-btn', 'share-json-text': 'copy-json-btn', 'share-text-area': 'copy-text-btn' };
+  var btn = document.getElementById(btnMap[id]);
+  if (btn) { var orig = btn.textContent; btn.textContent = '✅ コピーしました'; setTimeout(function() { btn.textContent = orig; }, 2000); }
+}
+
+function downloadJSON() {
+  var data = JSON.stringify(collectState(), null, 2);
+  var blob = new Blob([data], { type: 'application/json' });
+  var a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = 'asset-simulator-settings.json';
+  a.click();
+}
+
+function importJSON() {
+  try {
+    var raw = document.getElementById('import-json-text').value.trim();
+    var state = JSON.parse(raw);
+    applyState(state);
+    closeShare();
+  } catch(e) {
+    alert('JSONの形式が正しくありません。\n' + e.message);
+  }
+}
+
+// Load state from URL params on startup
+(function() {
+  var params = new URLSearchParams(location.search);
+  if (params.toString()) {
+    var state = {};
+    params.forEach(function(v, k) {
+      if (v === 'true') state[k] = true;
+      else if (v === 'false') state[k] = false;
+      else state[k] = v;
+    });
+    applyState(state);
+  }
+})();
+</script>
+</body>
+</html>
